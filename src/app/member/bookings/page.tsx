@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { MemberBookingsList } from '@/components/member/bookings-list'
+import { isDemoMode, demoMember, demoBookings } from '@/lib/demo-data'
 
 interface PageProps {
   searchParams: Promise<{ success?: string }>
@@ -7,6 +8,19 @@ interface PageProps {
 
 export default async function MemberBookingsPage({ searchParams }: PageProps) {
   const params = await searchParams
+
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'member') {
+    return (
+      <MemberBookingsList
+        memberId={demoMember.id}
+        bookings={demoBookings}
+        showSuccess={params.success === 'true'}
+      />
+    )
+  }
+
   const supabase = await createClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const client = supabase as any

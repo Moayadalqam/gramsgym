@@ -1,7 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { ScheduleManager } from '@/components/coach/schedule-manager'
+import { isDemoMode, demoCoach, demoAvailability, demoBookings } from '@/lib/demo-data'
 
 export default async function SchedulePage() {
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'coach') {
+    return (
+      <ScheduleManager
+        currentCoach={demoCoach}
+        coaches={[demoCoach]}
+        availability={demoAvailability}
+        bookings={demoBookings}
+      />
+    )
+  }
+
   const supabase = await createClient()
 
   // Get current coach

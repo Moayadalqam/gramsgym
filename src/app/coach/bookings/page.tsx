@@ -1,8 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { BookingsCalendar } from '@/components/coach/bookings-calendar'
 import { startOfWeek, endOfWeek, addDays } from 'date-fns'
+import { isDemoMode, demoBookings, demoCoach, demoMembers } from '@/lib/demo-data'
 
 export default async function BookingsPage() {
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'coach') {
+    return (
+      <BookingsCalendar
+        bookings={demoBookings}
+        coaches={[demoCoach]}
+        members={demoMembers}
+      />
+    )
+  }
+
   const supabase = await createClient()
 
   // Get bookings for current week

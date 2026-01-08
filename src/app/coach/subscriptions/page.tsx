@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { SubscriptionsManager } from '@/components/coach/subscriptions-manager'
+import { isDemoMode, demoMembers, demoCoach, demoGymMemberships, demoPTPackages, demoPricing } from '@/lib/demo-data'
 
 interface PageProps {
   searchParams: Promise<{ member?: string; type?: string }>
@@ -7,6 +8,23 @@ interface PageProps {
 
 export default async function SubscriptionsPage({ searchParams }: PageProps) {
   const params = await searchParams
+
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'coach') {
+    return (
+      <SubscriptionsManager
+        members={demoMembers}
+        coaches={[demoCoach]}
+        gymMemberships={demoGymMemberships}
+        ptPackages={demoPTPackages}
+        pricing={demoPricing}
+        defaultMemberId={params.member}
+        defaultType={params.type}
+      />
+    )
+  }
+
   const supabase = await createClient()
 
   const { data: members } = await supabase

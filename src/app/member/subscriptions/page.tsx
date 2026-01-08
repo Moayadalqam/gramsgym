@@ -4,30 +4,44 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CreditCard, Dumbbell, Calendar, AlertCircle } from 'lucide-react'
 import { format, differenceInDays } from 'date-fns'
+import { isDemoMode, demoGymMembership, demoPTPackage, demoCoach } from '@/lib/demo-data'
 
 export default async function MemberSubscriptionsPage() {
-  const supabase = await createClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const client = supabase as any
+  // Check for demo mode
+  const demoMode = await isDemoMode()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let gymMemberships: typeof demoGymMembership[] | null = null
+  let ptPackages: (typeof demoPTPackage & { coach: typeof demoCoach })[] | null = null
 
-  // Get all gym memberships
-  const { data: gymMemberships } = await client
-    .from('gym_memberships')
-    .select('*')
-    .eq('member_id', user?.id)
-    .order('created_at', { ascending: false })
+  if (demoMode === 'member') {
+    gymMemberships = [demoGymMembership]
+    ptPackages = [{ ...demoPTPackage, coach: demoCoach }]
+  } else {
+    const supabase = await createClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = supabase as any
 
-  // Get all PT packages
-  const { data: ptPackages } = await client
-    .from('pt_packages')
-    .select(`
-      *,
-      coach:coaches(id, name_en, name_ar, profile_photo_url)
-    `)
-    .eq('member_id', user?.id)
-    .order('created_at', { ascending: false })
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Get all gym memberships
+    const { data: gm } = await client
+      .from('gym_memberships')
+      .select('*')
+      .eq('member_id', user?.id)
+      .order('created_at', { ascending: false })
+    gymMemberships = gm
+
+    // Get all PT packages
+    const { data: pt } = await client
+      .from('pt_packages')
+      .select(`
+        *,
+        coach:coaches(id, name_en, name_ar, profile_photo_url)
+      `)
+      .eq('member_id', user?.id)
+      .order('created_at', { ascending: false })
+    ptPackages = pt
+  }
 
   const today = new Date()
   const activeGymMembership = gymMemberships?.find((m: { status: string }) => m.status === 'active')

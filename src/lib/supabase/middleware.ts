@@ -7,6 +7,12 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  // Check for demo mode - bypass auth entirely
+  const demoMode = request.cookies.get('demo_mode')?.value
+  if (demoMode === 'member' || demoMode === 'coach') {
+    return supabaseResponse
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 

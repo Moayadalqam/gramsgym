@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MemberDetail } from '@/components/coach/member-detail'
+import { isDemoMode, demoMembers, demoCoach, demoGymMembership, demoPTPackage, demoBookings } from '@/lib/demo-data'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -8,6 +9,25 @@ interface PageProps {
 
 export default async function MemberDetailPage({ params }: PageProps) {
   const { id } = await params
+
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'coach') {
+    const foundMember = demoMembers.find(m => m.id === id)
+    const member = foundMember
+      ? { ...foundMember, coach: demoCoach }
+      : { ...demoMembers[0], coach: demoCoach }
+    return (
+      <MemberDetail
+        member={member}
+        gymMemberships={[demoGymMembership]}
+        ptPackages={[{ ...demoPTPackage, coach: demoCoach }]}
+        bookings={demoBookings.map(b => ({ ...b, coach: demoCoach }))}
+        coaches={[demoCoach]}
+      />
+    )
+  }
+
   const supabase = await createClient()
 
   const { data: member } = await supabase

@@ -3,8 +3,30 @@ import { BookingForm } from '@/components/member/booking-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { startOfWeek, endOfWeek, addWeeks } from 'date-fns'
+import { isDemoMode, demoMember, demoCoach, demoPTPackage, demoAvailability, demoBookings } from '@/lib/demo-data'
 
 export default async function BookSessionPage() {
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'member') {
+    const memberWithCoach = { ...demoMember, coach: demoCoach }
+    return (
+      <div className="space-y-6 pb-20 lg:pb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Book a Session</h1>
+          <p className="text-muted-foreground">Schedule a personal training session with your coach</p>
+        </div>
+        <BookingForm
+          member={memberWithCoach}
+          coach={demoCoach}
+          ptPackages={[demoPTPackage]}
+          coachAvailability={demoAvailability}
+          existingBookings={demoBookings.filter(b => b.status === 'scheduled')}
+        />
+      </div>
+    )
+  }
+
   const supabase = await createClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const client = supabase as any

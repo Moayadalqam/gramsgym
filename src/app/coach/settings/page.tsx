@@ -1,7 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { SettingsManager } from '@/components/coach/settings-manager'
+import { isDemoMode, demoGymSettings, demoPricing, demoWorkingHours } from '@/lib/demo-data'
 
 export default async function SettingsPage() {
+  // Check for demo mode
+  const demoMode = await isDemoMode()
+  if (demoMode === 'coach') {
+    return (
+      <SettingsManager
+        gymSettings={demoGymSettings}
+        pricing={demoPricing}
+        workingHours={demoWorkingHours}
+      />
+    )
+  }
+
   const supabase = await createClient()
 
   // Get gym settings
